@@ -50,6 +50,14 @@ enum gameVersion_t
 
 // Extracted values
 gameVersion_t version;
+
+// When true, purely-cosmetic animations (torch flames, potion bubbles) stop consuming the shared RNG
+// (prandom). This decouples random_seed from on-screen cosmetics so it advances ONLY on gameplay events
+// (chiefly guard combat decisions). Intended for SEARCH/EXPLORATION ONLY: solutions found in this mode
+// cannot be transcribed to the real game (their RNG stream differs), but the search can then fold the
+// seed into its state hash soundly without the "torch noise" defeating dedup. Default false (faithful).
+bool disableNonGameplayRNG = false;
+
 int8_t control_x;
 int8_t control_y;
 int8_t control_shift;
@@ -5613,6 +5621,8 @@ __INLINE__ int16_t get_trob_right_above_pos_in_drawn_room()
 __INLINE__ int16_t get_torch_frame(int16_t curr)
 {
   int16_t next;
+  // Cosmetic flame flicker. In exploration mode, freeze it so it consumes no RNG (see disableNonGameplayRNG).
+  if (disableNonGameplayRNG) return curr;
   next = prandom(255);
   if (next != curr)
   {
@@ -5900,15 +5910,17 @@ Possible values of trob_type:
 // seg007:081E
 __INLINE__ void  start_anim_torch(int16_t room, int16_t tilepos)
 {
-  curr_room_modif[tilepos] = prandom(8);
+  // Cosmetic. In exploration mode, use a fixed initial flame frame so no RNG is consumed.
+  curr_room_modif[tilepos] = disableNonGameplayRNG ? 0 : prandom(8);
   add_trob(room, tilepos, 1);
 }
 
 // seg007:0847
 __INLINE__ void  start_anim_potion(int16_t room, int16_t tilepos)
 {
+  // Cosmetic bubble phase. In exploration mode, use a fixed phase so no RNG is consumed.
   curr_room_modif[tilepos] &= 0xF8;
-  curr_room_modif[tilepos] |= prandom(6) + 1;
+  curr_room_modif[tilepos] |= disableNonGameplayRNG ? 1 : (prandom(6) + 1);
   add_trob(room, tilepos, 1);
 }
 

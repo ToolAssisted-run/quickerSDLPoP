@@ -45,6 +45,9 @@ class SDLPoPInstanceBase
 
   virtual void setRNGValue(const uint32_t rngValue) = 0;
   virtual void setLooseTileSound(const uint16_t looseTileSound) = 0;
+  // Exploration-only: stop cosmetic animations (torches/potions) from consuming RNG. Non-pure so the
+  // reference SDLPoP backend (which doesn't support it) needs no change. Default: no-op.
+  virtual void setDisableNonGameplayRNG(const bool /*enabled*/) {}
   virtual void initializeCopyProtection() = 0;
   virtual void updateRenderer(const size_t stepId, const jaffar::input_t &input) = 0;
 

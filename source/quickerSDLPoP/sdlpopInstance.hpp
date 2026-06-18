@@ -82,6 +82,11 @@ class SDLPoPInstance final : public SDLPoPInstanceBase
       _emu->gameState.last_loose_sound = looseTileSound;
     }
 
+    void setDisableNonGameplayRNG(const bool enabled) override
+    {
+      _emu->disableNonGameplayRNG = enabled;
+    }
+
     void initializeCopyProtection() override
     {
       _emu->init_copyprot();
